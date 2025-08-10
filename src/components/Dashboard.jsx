@@ -1,6 +1,14 @@
+
+
+import { Plus, TrendingUp, TrendingDown, Wallet, IndianRupee, Calendar, Tag, Filter, Search, Eye, EyeOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Download, Moon, Sun, Target } from "lucide-react";
+
+import { useTransactions } from "./TransactionContext";
+import { useCurrency } from "./CurrencyContext";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AddTransactionModal from "./AddTransactionModal";
+ import EnhancedEmptyState from "./EnhancedEmptyState";
+
 import ConfirmationModal from "./ConfirmationModal";
 import Footer from "./Footer";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -29,18 +37,23 @@ import { useCurrency } from "./CurrencyContext";
 
 export default function Dashboard() {
   const { transactions, income, expense, deleteTransaction, undoDelete } =
-    useTransactions();
   const { currencySymbol } = useCurrency();
 
   const [showModal, setShowModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+  const { transactions, income, expense, setTransactions, deleteTransaction } = useTransactions();
+  const [showModal, setShowModal] = useState(false);
+
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showBalance, setShowBalance] = useState(true);
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [sortCriteria, setSortCriteria] = useState("date-desc");
 
   const [animatedValues, setAnimatedValues] = useState({ income: 0, expense: 0, balance: 0 });
@@ -86,6 +99,23 @@ export default function Dashboard() {
     expense: 0,
     balance: 0,
   });
+
+  // Scroll to top functionality
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   const balance = income - expense;
   const categories = ["All", ...new Set(transactions.map((t) => t.category))];
@@ -601,6 +631,12 @@ export default function Dashboard() {
               </div>
               ))}
             </div>
+     {transactions.length === 0 && (
+  <div className="text-center mb-8">
+    {/* Styled Heading */}
+    <h2 className="inline-block px-6 py-3 mb-6 text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-full shadow-lg backdrop-blur-md border border-white/20">
+      🚀 No Transactions Yet — Let’s Get Started!
+    </h2>
 
             {filteredAndSortedTransactions.length === 0 && (
               <div className="text-center py-12">
@@ -632,6 +668,74 @@ export default function Dashboard() {
         />
         <Footer />
       </div>
+    <EnhancedEmptyState onAddTransaction={() => setShowModal(true)} />
+  </div>
+)}
+
+
+      
+          </div>
+        </div>
+      </main>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-24 right-6 z-50 p-4 rounded-full shadow-lg transform transition-all duration-500 ease-in-out ${
+          showScrollTop
+            ? "translate-y-0 opacity-100 scale-100"
+            : "translate-y-16 opacity-0 scale-75 pointer-events-none"
+        } ${
+          darkMode
+            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-blue-900/25"
+            : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-blue-200"
+        } hover:scale-110 hover:-translate-y-1 group`}
+        aria-label="Scroll to top"
+      >
+        <ChevronUp className="w-6 h-6 transition-transform duration-300 group-hover:-translate-y-0.5" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
+      </button>
+
+      <Footer />
+
+      <AddTransactionModal showModal={showModal} setShowModal={setShowModal} darkMode={darkMode} />
+      <ConfirmationModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title={"Confirm Deletion"}
+        message={'Are you sure you want to delete this transaction? This action cannot be undone.'}
+        darkMode={darkMode}
+      />
+
+      <style jsx>{`
+        @keyframes expandWidth {
+          from {
+            transform: scaleX(0);
+          }
+          to {
+            transform: scaleX(1);
+          }
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes slideUp {
+          from {
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

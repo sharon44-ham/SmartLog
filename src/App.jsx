@@ -16,6 +16,9 @@ import TrackExpenses from './components/TrackExpenses';
 import SmartAnalytics from './components/SmartAnalytics';
 import BudgetGoals from './components/BudgetGoals';
 import VisualReports from './components/VisualReports';
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
+
 
 export default function App() {
   return (
@@ -35,6 +38,9 @@ export default function App() {
             <Route path="/smart-analytics" element={<SmartAnalytics />} /> 
             <Route path="/budget-goals" element={<BudgetGoals />} /> 
             <Route path="/visual-reports" element={<VisualReports />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+
           </Routes>
         </Router>
         <UndoTransaction />
